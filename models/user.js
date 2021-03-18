@@ -2,7 +2,6 @@ const mongoose = require("mongoose");
 const uuidv1 = require("uuidv1");
 const crypto = require("crypto");
 const { ObjectId } = mongoose.Schema;
-const Post = require("./post");
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -75,15 +74,15 @@ userSchema.methods = {
   },
 };
 
-userSchema.pre("remove", function (next) {
-  Post.deleteMany({ postedBy: this._id }, function (err, result) {
-    if (err) {
-      console.log("error");
-    } else {
-      console.log(result);
-    }
-  });
-  next();
-});
+// userSchema.pre("remove", function (next) {
+//   Post.deleteMany({ postedBy: this._id }, function (err, result) {
+//     if (err) {
+//       console.log("error");
+//     } else {
+//       console.log(result);
+//     }
+//   });
+//   next();
+// });
 
 module.exports = mongoose.model("User", userSchema);
