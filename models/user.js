@@ -76,7 +76,7 @@ userSchema.methods = {
 };
 
 UserSchema.pre("remove", async function (next) {
-  await Post.remove({ postedBy: this._id }).exec();
+  await Post.deleteMany({ postedBy: this._id }).exec();
   await Post.updateMany(
     {},
     { $pull: { comments: { postedBy: this._id } } },
@@ -84,5 +84,16 @@ UserSchema.pre("remove", async function (next) {
   ).exec();
   next();
 });
+
+// userSchema.pre("remove", function (next) {
+//   Post.deleteMany({ postedBy: this._id }, function (err, result) {
+//     if (err) {
+//       console.log("error");
+//     } else {
+//       console.log(result);
+//     }
+//   });
+//   next();
+// });
 
 module.exports = mongoose.model("User", userSchema);
