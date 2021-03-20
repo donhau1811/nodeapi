@@ -19,15 +19,22 @@ exports.userById = (req, res, next, id) => {
     });
 };
 
-// exports.hasAuthorization = (req, res, next) => {
-//   const authorized =
-//     req.profile && req.auth && req.profile._id === req.auth._id;
-//   if (!authorized) {
-//     return res.status(403).json({
-//       error: "User is not authorized to perform this action!",
-//     });
-//   }
-// };
+exports.hasAuthorization = (req, res, next) => {
+  //perform check if a user is subscriber and admin to perform further action
+  let normalUser = req.profile && req.auth && req.profile._id == req.auth._id;
+  let adminUser = req.profile && req.auth && req.auth.role === "admin";
+
+  const authorized = normalUser || adminUser;
+
+  // console.log("req.profile ", req.profile, " req.auth ", req.auth);
+
+  if (!authorized) {
+    return res.status(403).json({
+      error: "User is not authorized to perform this action!",
+    });
+  }
+  next();
+};
 
 exports.allUsers = (req, res) => {
   User.find((err, users) => {
@@ -37,7 +44,7 @@ exports.allUsers = (req, res) => {
       });
     }
     res.json(users);
-  }).select("name email updated created");
+  }).select("name email updated created role");
 };
 
 exports.getUser = (req, res) => {
@@ -113,7 +120,6 @@ exports.deleteUser = (req, res, next) => {
     res.json({ message: "Successfully delete user" });
   });
 };
-
 
 //follow
 exports.addFollowing = (req, res, next) => {
