@@ -37,14 +37,14 @@ exports.signin = (req, res) => {
     }
     // generate a token with user id and secret
     const token = jwt.sign(
-      { _id: user._id },
+      { _id: user._id, role: user.role },
       process.env.JWT_SECRET
     );
     // persist the token as 't' in cookie with expiry date
     res.cookie("t", token, { expire: new Date() + 9999 });
     // return response with user and token to frontend client
-    const { _id, name, role, email } = user;
-    return res.json({ token, user: { _id, name, role, email } });
+    const { _id, name, email, role  } = user;
+    return res.json({ token, user: { _id, name, email, role } });
   });
 };
 
@@ -88,8 +88,8 @@ exports.forgotPassword = (req, res) => {
       from: "noreply@node-react.com",
       to: email,
       subject: "Password Reset Instructions",
-      text: `Please use the following link to reset your password: http://165.232.147.169/reset-password/${token}`,
-      html: `<p>Please use the following link to reset your password:</p> <p>http://165.232.147.169/reset-password/${token}</p>`,
+      text: `Please use the following link to reset your password: ${process.env.CLIENT_URL}/reset-password/${token}`,
+      html: `<p>Please use the following link to reset your password:</p> <p>${process.env.CLIENT_URL}/reset-password/${token}</p>`,
     };
 
     return user.updateOne({ resetPasswordLink: token }, (err, success) => {

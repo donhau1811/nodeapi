@@ -20,13 +20,14 @@ exports.userById = (req, res, next, id) => {
 };
 
 exports.hasAuthorization = (req, res, next) => {
-  //perform check if a user is subscriber and admin to perform further action
+  //perform check if a user is subscriber or admin to perform further action
   let normalUser = req.profile && req.auth && req.profile._id == req.auth._id;
-  let adminUser = req.profile && req.auth && req.auth.role === "admin";
+  let adminUser = req.auth && req.profile && req.auth.role === "admin";
 
   const authorized = normalUser || adminUser;
 
   // console.log("req.profile ", req.profile, " req.auth ", req.auth);
+  // console.log("NORMALUSER: ", normalUser, " ADMINUSER: ", adminUser);
 
   if (!authorized) {
     return res.status(403).json({
@@ -36,15 +37,39 @@ exports.hasAuthorization = (req, res, next) => {
   next();
 };
 
+// exports.allUsers = (req, res) => {
+//   User.find((err, users) => {
+//     if (err) {
+//       return res.status(400).json({
+//         error: err,
+//       });
+//     }
+//     res.json(users);
+//   }).select("name email updated created role");
+// };
+
 exports.allUsers = (req, res) => {
-  User.find((err, users) => {
-    if (err) {
-      return res.status(400).json({
-        error: err,
-      });
-    }
-    res.json(users);
-  }).select("name email updated created role");
+  // get current page from req.query or use default value of 1
+  const currentPage = req.query.page || 1;
+  // return 3 users per page
+  const perPage = 3;
+  let totalItems;
+
+  const users = User.find()
+    .countDocuments()
+    .then((count) => {
+      totalItems = count;
+      return User.find()
+
+        .skip((currentPage - 1) * perPage)
+        .sort({ date: -1 })
+        .limit(perPage)
+        .select("name email updated created role");
+    })
+    .then((users) => {
+      res.status(200).json(users);
+    })
+    .catch((err) => console.log(err));
 };
 
 exports.getUser = (req, res) => {
@@ -109,7 +134,7 @@ exports.userPhoto = (req, res, next) => {
   next();
 };
 
-exports.deleteUser = (req, res, next) => {
+exports.deleteUser = (req, res) => {
   let user = req.profile;
   user.remove((err, user) => {
     if (err) {
