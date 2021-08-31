@@ -15,14 +15,15 @@ const userSchema = new mongoose.Schema({
     trim: true,
     required: true,
   },
-  role: {
-    type: String,
-    default: "subscriber",
-  },
   hashed_password: {
     type: String,
     required: true,
   },
+  role: {
+    type: String,
+    default: "subscriber",
+  },
+
   salt: String,
   created: {
     type: Date,

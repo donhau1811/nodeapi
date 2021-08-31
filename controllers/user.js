@@ -37,39 +37,15 @@ exports.hasAuthorization = (req, res, next) => {
   next();
 };
 
-// exports.allUsers = (req, res) => {
-//   User.find((err, users) => {
-//     if (err) {
-//       return res.status(400).json({
-//         error: err,
-//       });
-//     }
-//     res.json(users);
-//   }).select("name email updated created role");
-// };
-
 exports.allUsers = (req, res) => {
-  // get current page from req.query or use default value of 1
-  const currentPage = req.query.page || 1;
-  // return 3 users per page
-  const perPage = 3;
-  let totalItems;
-
-  const users = User.find()
-    .countDocuments()
-    .then((count) => {
-      totalItems = count;
-      return User.find()
-
-        .skip((currentPage - 1) * perPage)
-        .sort({ date: -1 })
-        .limit(perPage)
-        .select("name email updated created role");
-    })
-    .then((users) => {
-      res.status(200).json(users);
-    })
-    .catch((err) => console.log(err));
+  User.find((err, users) => {
+    if (err) {
+      return res.status(400).json({
+        error: err,
+      });
+    }
+    res.json(users);
+  }).select("name email updated created role");
 };
 
 exports.getUser = (req, res) => {

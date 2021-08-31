@@ -19,45 +19,37 @@ exports.postById = (req, res, next, id) => {
     });
 };
 
-// exports.getPosts = (req, res) => {
-//   const posts = Post.find()
-//     .populate("postedBy", "_id name")
-//     .populate("comments", "text created")
-//     .populate("comments.postedBy", "_id name")
-//     .select("_id title body created likes")
-//     .sort({ created: -1 })
-//     .then((posts) => {
-//       res.json(posts);
-//     })
-//     .catch((err) => console.log(err));
+// exports.getPosts =  (req, res) => {
+//  const posts =  Post.find()
+//       .populate("postedBy", "_id name")
+//       .populate("comments", "text created")
+//       .populate("comments.postedBy", "_id name")
+//       .select("_id title body created likes")
+//       .sort({ created: -1 })
+      
+//       .then(posts => {
+//           res.json(posts);
+//       })
+//       .catch(err => console.log(err))
+//       ;
 // };
 
-exports.getPosts =  (req, res) => {
-  // get current page from req.query or use default value of 1
-  const currentPage = req.query.page || 1;
-  // return 3 posts per page
-  const perPage = 3;
-  let totalItems;
-
-  const posts =  Post.find()
-      // countDocuments() gives you total count of posts
-      .countDocuments()
-      .then(count => {
-          totalItems = count;
-          return Post.find()
-              .skip((currentPage - 1) * perPage)
-              .populate("comments", "text created")
-              .populate("comments.postedBy", "_id name")
-              .populate("postedBy", "_id name")
-              .sort({ date: -1 })
-              .limit(perPage)
-              .select("_id title body created likes");
-      })
-      .then(posts => {
-          res.status(200).json(posts);
-      })
-      .catch(err => console.log(err));
-};
+exports.getPosts = async (req, res) => {
+ await   Post.find()
+  .populate("postedBy", "_id name")
+        .populate("comments", "text created")
+        .populate("comments.postedBy", "_id name")
+        .select("_id title body created likes")
+        .sort({ created: -1 }).
+  exec((err, posts) => {
+  if (err) {
+  return res.status(400).json({
+  error: err,
+  });
+  }
+  res.json(posts).limit(12);
+  })
+  };
 
 
 exports.createPost = (req, res, next) => {
@@ -108,14 +100,15 @@ exports.postByUser = (req, res) => {
 
 exports.isPoster = (req, res, next) => {
   //an admin can edit and delete post
-  let normalUser = req.post && req.auth && req.post.postedBy._id == req.auth._id;
+  let normalUser =
+    req.post && req.auth && req.post.postedBy._id == req.auth._id;
   let adminUser = req.post && req.auth && req.auth.role === "admin";
 
   // console.log("req.post ", req.post, " req.auth", req.auth);
-  // console.log("NORMALUSER: ", normalUser, " ADMINUSER: ", adminUser); 
+  // console.log("NORMALUSER: ", normalUser, " ADMINUSER: ", adminUser);
 
   let isPoster = normalUser || adminUser;
-  
+
   if (!isPoster) {
     return res.status(403).json({
       error: "User is not allowed to delete/edit post",
